@@ -51,5 +51,12 @@ def create_chef_agent():
     return workflow.compile()
 
 
-# Create the agent instance for export
-chef_agent = create_chef_agent()
+# Create the agent instance for export.
+# Wrapped in try/except so that an unexpected library API change produces a
+# clear AttributeError (chef_agent is None) rather than crashing the process.
+try:
+    chef_agent = create_chef_agent()
+except Exception as _graph_err:  # noqa: BLE001
+    import logging as _logging
+    _logging.getLogger(__name__).exception("Failed to compile chef agent graph")
+    chef_agent = None  # type: ignore[assignment]

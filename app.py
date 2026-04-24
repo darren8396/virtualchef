@@ -7,8 +7,11 @@ their available ingredients.
 
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage
-
-from agent import chef_agent
+# NOTE: `agent` is NOT imported at the top level.
+# Importing it here would run the entire LangGraph / LLM module tree before
+# Streamlit even binds to a port, causing a silent "connection refused" crash
+# if any library raises an exception during import.  The agent is loaded
+# lazily inside the chat handler and cached in st.session_state.
 
 
 def _extract_text(content) -> str:
@@ -151,6 +154,27 @@ if prompt := st.chat_input("What ingredients do you have? (e.g., 'I have chicken
         "max_cooking_time": max_time
     }
     
+    # ── Lazy-load the agent (cached in session_state after first load) ──────
+    if "chef_agent" not in st.session_state:
+        try:
+            from agent import chef_agent as _loaded_agent  # noqa: PLC0415
+            st.session_state.chef_agent = _loaded_agent
+        except Exception as _import_err:
+            import traceback as _tb
+            _trace = _tb.format_exc()
+            logger.error("Agent import failed:\n%s", _trace)
+            st.error(
+                "**Failed to initialize the AI Chef agent.**\n\n"
+                f"```\n{type(_import_err).__name__}: {_import_err}\n```\n\n"
+                "Common causes:\n"
+                "- Missing or incorrect API keys in Streamlit Secrets\n"
+                "- A library version incompatibility\n\n"
+                "Check the app logs for the full traceback."
+            )
+            st.stop()
+    chef_agent = st.session_state.chef_agent
+    # ────────────────────────────────────────────────────────────────────────
+
     # Get response from agent
     with st.chat_message("assistant", avatar=PAGE_ICON):
         with st.spinner("🔍 Searching for recipes..."):
