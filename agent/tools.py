@@ -28,11 +28,14 @@ def get_search_tool():
     )
 
 
-# Create tool instance for export
-search_recipes = get_search_tool()
-
-# List of all tools for the agent
-tools = [search_recipes]
+# Defer instantiation so a missing TAVILY_API_KEY at import time doesn't
+# crash the Streamlit process before the UI can display a helpful error.
+try:
+    search_recipes = get_search_tool()
+    tools = [search_recipes]
+except Exception:  # noqa: BLE001
+    search_recipes = None  # type: ignore[assignment]
+    tools = []
 
 # Dictionary for quick tool lookup by name
 tools_by_name = {tool.name: tool for tool in tools}

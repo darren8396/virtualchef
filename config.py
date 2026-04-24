@@ -9,7 +9,7 @@ import re
 import logging
 from dotenv import load_dotenv
 
-# Load environment variables from .env file (single source of truth)
+# Load environment variables from .env file (local development)
 load_dotenv()
 
 # Configure logging
@@ -19,9 +19,31 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
+def _get_secret(key: str) -> str | None:
+    """Read a secret from st.secrets (Streamlit Cloud) or fall back to env var.
+
+    Streamlit Community Cloud stores secrets via the dashboard and exposes them
+    through st.secrets.  They are NOT always injected as OS env vars before
+    module-level code runs, so we check st.secrets explicitly first.
+    """
+    # Try Streamlit secrets first (works on Streamlit Community Cloud)
+    try:
+        import streamlit as st
+        value = st.secrets.get(key)
+        if value:
+            # Mirror into os.environ so third-party libraries can pick it up
+            os.environ[key] = value
+            return value
+    except Exception:
+        pass
+    # Fall back to environment variable (local .env or CI/CD injection)
+    return os.getenv(key)
+
+
 # API Keys
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+GOOGLE_API_KEY = _get_secret("GOOGLE_API_KEY")
+TAVILY_API_KEY = _get_secret("TAVILY_API_KEY")
 
 # Model Configuration
 MODEL_NAME = "gemini-2.5-flash"

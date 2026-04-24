@@ -35,7 +35,9 @@ from config import (
     DEFAULT_COOKING_TIME,
     validate_config,
     sanitize_input,
-    logger
+    logger,
+    GOOGLE_API_KEY,
+    TAVILY_API_KEY,
 )
 
 
@@ -45,6 +47,23 @@ st.set_page_config(
     page_icon=PAGE_ICON,
     layout="wide"
 )
+
+# ── Early secrets check ────────────────────────────────────────────────────────
+# Show a helpful error and stop before any LangGraph code runs when API keys
+# are missing (common on a fresh Streamlit Community Cloud deploy).
+_missing_keys = [k for k, v in [("GOOGLE_API_KEY", GOOGLE_API_KEY), ("TAVILY_API_KEY", TAVILY_API_KEY)] if not v]
+if _missing_keys:
+    st.error(
+        f"**Missing API keys:** {', '.join(_missing_keys)}\n\n"
+        "Go to your app's **Settings → Secrets** on Streamlit Community Cloud "
+        "and add the missing keys in TOML format:\n"
+        "```toml\n"
+        'GOOGLE_API_KEY = "your_google_api_key"\n'
+        'TAVILY_API_KEY = "your_tavily_api_key"\n'
+        "```"
+    )
+    st.stop()
+# ──────────────────────────────────────────────────────────────────────────────
 
 # Title and description
 st.title(f"{PAGE_ICON} VirtualChef - AI Recipe Finder")
