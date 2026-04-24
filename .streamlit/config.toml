@@ -1,0 +1,29 @@
+[server]
+# Cloud Run configuration
+port = 8080
+address = "0.0.0.0"
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+
+# Performance settings
+maxUploadSize = 5
+maxMessageSize = 50
+
+[browser]
+# Disable usage statistics
+gatherUsageStats = false
+# Don't open browser automatically
+serverAddress = "localhost"
+
+[theme]
+# Optional: Custom theme for VirtualChef
+primaryColor = "#FF6B6B"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"
+textColor = "#262730"
+font = "sans serif"
+
+[logger]
+# Logging level
+level = "info"
