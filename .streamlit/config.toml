@@ -1,7 +1,7 @@
 [server]
-# Cloud Run configuration
-port = 8080
-address = "0.0.0.0"
+# Note: port/address are intentionally unset so Streamlit Community Cloud
+# can use its default port 8501. Cloud Run deployment overrides these via
+# the Dockerfile CMD (--server.port=$PORT --server.address=0.0.0.0).
 headless = true
 enableCORS = false
 enableXsrfProtection = false
@@ -13,8 +13,6 @@ maxMessageSize = 50
 [browser]
 # Disable usage statistics
 gatherUsageStats = false
-# Don't open browser automatically
-serverAddress = "localhost"
 
 [theme]
 # Optional: Custom theme for VirtualChef
